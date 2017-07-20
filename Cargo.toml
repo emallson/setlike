@@ -1,0 +1,7 @@
+[package]
+authors = ["J David Smith <emallson@archlinux.us>"]
+name = "setlike"
+version = "0.1.0"
+[dependencies]
+bit-set = "0.4"
+quickcheck = "0.4"
