@@ -12,6 +12,39 @@ However, being able to swap out set-like types is extremely useful because it al
 
 Thus, `Setlike` is born! The entire crate is just the trait `Setlike` and implementations for `HashSet`, `BTreeSet` and `BitSet`.
 
+## Usage
+
+Want a function that can take any set-like instance? Easy!
+
+```rust
+extern crate setlike;
+use setlike::Setlike;
+fn hug<S: Setlike<usize>>(a: &S, b:&S, val: usize) -> bool {
+    b.contains(&val) && a.contains(&val)
+}
+```
+
+Want something that you can also iterator over? Combine `Setlike` with an `IntoIterator` trait:
+
+```rust
+extern crate setlike;
+use setlike::Setlike;
+
+/// Fake counting the intersection size. Definitely not the most efficient way to do this if you know the exact set type.
+fn intersection_size<'a, E: 'a, S, T>(a: &S, b: &S) -> usize
+    where S: Setlike<E> + 'a,
+          T: Setlike<E> + 'a,
+          &'a S: IntoIterator<&'a E> {
+    let mut count = 0;
+    for el in &a {
+        if b.contains(el) {
+            count += 1;
+        }
+    }
+    count
+}
+```
+
 # License
 
 Copyright 2017 J. David Smith
