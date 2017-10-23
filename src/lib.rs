@@ -23,9 +23,15 @@ pub trait Setlike<T: Sized> {
 
     /// The number of elements in the set.
     fn len(&self) -> usize;
+
+    /// Create an instance of the setlike with a hint that we will need room for `k` elements.
+    ///
+    /// Not all implementations support this operation; those that do not will simply create an
+    /// empty instance.
+    fn with_capacity(k: usize) -> Self where Self: Sized;
 }
 
-impl<T: Sized + Eq + Hash, S: BuildHasher> Setlike<T> for HashSet<T, S> {
+impl<T: Sized + Eq + Hash, S: BuildHasher + Default> Setlike<T> for HashSet<T, S> {
     fn contains(&self, el: &T) -> bool {
         self.contains(el)
     }
@@ -40,6 +46,10 @@ impl<T: Sized + Eq + Hash, S: BuildHasher> Setlike<T> for HashSet<T, S> {
 
     fn len(&self) -> usize {
         self.len()
+    }
+
+    fn with_capacity(k: usize) -> Self {
+        HashSet::with_capacity_and_hasher(k, S::default())
     }
 }
 
@@ -59,6 +69,10 @@ impl Setlike<usize> for BitSet {
     fn contains(&self, i: &usize) -> bool {
         self.contains(*i)
     }
+
+    fn with_capacity(k: usize) -> Self {
+        BitSet::with_capacity(k)
+    }
 }
 
 impl<T: Sized + Ord> Setlike<T> for BTreeSet<T> {
@@ -76,6 +90,10 @@ impl<T: Sized + Ord> Setlike<T> for BTreeSet<T> {
 
     fn remove(&mut self, el: &T) -> bool {
         self.remove(el)
+    }
+
+    fn with_capacity(_k: usize) -> Self {
+        Self::new()
     }
 }
 
