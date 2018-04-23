@@ -1,8 +1,14 @@
 [package]
 authors = ["J David Smith <emallson@archlinux.us>"]
+license = "BSD-3-Clause"
 name = "setlike"
 version = "0.1.0"
-license = "BSD-3-Clause"
+
+[features]
+default = []
+bloom_filter = ["bloom"]
+
 [dependencies]
 bit-set = "0.4"
+bloom = { version = "0.3.2", optional = true }
 quickcheck = "0.4"

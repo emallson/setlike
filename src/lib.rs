@@ -2,6 +2,9 @@ extern crate bit_set;
 use std::collections::{BTreeSet, HashSet};
 use std::hash::{Hash, BuildHasher};
 use bit_set::BitSet;
+#[cfg(feature = "bloom_filter")]
+extern crate bloom;
+
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
@@ -94,6 +97,33 @@ impl<T: Sized + Ord> Setlike<T> for BTreeSet<T> {
 
     fn with_capacity(_k: usize) -> Self {
         Self::new()
+    }
+}
+
+#[cfg(feature = "bloom_filter")]
+impl<R, S, T> Setlike<T> for bloom::BloomFilter<R, S>
+    where R: BuildHasher,
+          S: BuildHasher,
+          T: Hash + Sized
+{
+    fn len(&self) -> usize {
+        unimplemented!("bloom filters lack a clear concept of length");
+    }
+
+    fn insert(&mut self, el: T) -> bool {
+        <Self as bloom::ASMS>::insert(self, &el)
+    }
+
+    fn remove(&mut self, _el: &T) -> bool {
+        unimplemented!("if removal is desired, use a cuckoo filter");
+    }
+
+    fn contains(&self, el: &T) -> bool {
+        <Self as bloom::ASMS>::contains(self, el)
+    }
+
+    fn with_capacity(_k: usize) -> Self {
+        unimplemented!("use a bloom-specific constructor");
     }
 }
 
