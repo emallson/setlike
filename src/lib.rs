@@ -1,5 +1,7 @@
 #[cfg(feature = "bit-set")]
 use bit_set::BitSet;
+#[cfg(feature = "hashbrown")]
+use hashbrown::HashSet as HashBrownSet;
 use std::collections::{BTreeSet, HashSet};
 use std::hash::{BuildHasher, Hash};
 #[cfg(test)]
@@ -55,6 +57,28 @@ impl<T: Sized + Eq + Hash, S: BuildHasher + Default> Setlike<T> for HashSet<T, S
     }
 }
 
+impl<T: Sized + Ord> Setlike<T> for BTreeSet<T> {
+    fn len(&self) -> usize {
+        self.len()
+    }
+
+    fn contains(&self, el: &T) -> bool {
+        self.contains(el)
+    }
+
+    fn insert(&mut self, el: T) -> bool {
+        self.insert(el)
+    }
+
+    fn remove(&mut self, el: &T) -> bool {
+        self.remove(el)
+    }
+
+    fn with_capacity(_k: usize) -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(feature = "bit-set")]
 impl Setlike<usize> for BitSet {
     fn insert(&mut self, i: usize) -> bool {
@@ -78,25 +102,26 @@ impl Setlike<usize> for BitSet {
     }
 }
 
-impl<T: Sized + Ord> Setlike<T> for BTreeSet<T> {
+#[cfg(feature = "hashbrown")]
+impl<T: Eq + Hash, S: BuildHasher + Default> Setlike<T> for HashBrownSet<T, S> {
+    fn insert(&mut self, i: T) -> bool {
+        self.insert(i)
+    }
+
+    fn remove(&mut self, i: &T) -> bool {
+        self.remove(i)
+    }
+
     fn len(&self) -> usize {
         self.len()
     }
 
-    fn contains(&self, el: &T) -> bool {
-        self.contains(el)
+    fn contains(&self, i: &T) -> bool {
+        self.contains(i)
     }
 
-    fn insert(&mut self, el: T) -> bool {
-        self.insert(el)
-    }
-
-    fn remove(&mut self, el: &T) -> bool {
-        self.remove(el)
-    }
-
-    fn with_capacity(_k: usize) -> Self {
-        Self::new()
+    fn with_capacity(k: usize) -> Self {
+        HashBrownSet::with_capacity_and_hasher(k, S::default())
     }
 }
 
@@ -166,5 +191,5 @@ mod test {
         use std::collections::BTreeSet;
     );
 
-    // bit-set doesn't impl Arbitrary
+    // bit-set and hashbrown don't impl Arbitrary and I can't devote time to wrapping right now
 }
