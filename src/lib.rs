@@ -1,7 +1,7 @@
-extern crate bit_set;
-use std::collections::{BTreeSet, HashSet};
-use std::hash::{Hash, BuildHasher};
+#[cfg(feature = "bit-set")]
 use bit_set::BitSet;
+use std::collections::{BTreeSet, HashSet};
+use std::hash::{BuildHasher, Hash};
 #[cfg(test)]
 #[macro_use]
 extern crate quickcheck;
@@ -28,7 +28,9 @@ pub trait Setlike<T: Sized> {
     ///
     /// Not all implementations support this operation; those that do not will simply create an
     /// empty instance.
-    fn with_capacity(k: usize) -> Self where Self: Sized;
+    fn with_capacity(k: usize) -> Self
+    where
+        Self: Sized;
 }
 
 impl<T: Sized + Eq + Hash, S: BuildHasher + Default> Setlike<T> for HashSet<T, S> {
@@ -53,6 +55,7 @@ impl<T: Sized + Eq + Hash, S: BuildHasher + Default> Setlike<T> for HashSet<T, S
     }
 }
 
+#[cfg(feature = "bit-set")]
 impl Setlike<usize> for BitSet {
     fn insert(&mut self, i: usize) -> bool {
         self.insert(i)
@@ -109,14 +112,14 @@ mod test {
                 quickcheck! {
                     fn contains_after_insert(set: $t, u: $e) -> bool {
                         let mut set = set;
-                        let mut s: &mut Setlike<$e> = &mut set;
+                        let s: &mut Setlike<$e> = &mut set;
                         s.insert(u);
                         s.contains(&u)
                     }
 
                     fn not_contains_after_remove(set: $t, u: $e) -> bool {
                         let mut set = set;
-                        let mut s: &mut Setlike<$e> = &mut set;
+                        let s: &mut Setlike<$e> = &mut set;
                         s.insert(u);
                         let contained = s.contains(&u);
                         s.remove(&u);
@@ -125,21 +128,21 @@ mod test {
 
                     fn insert_twice(set: $t, u: $e) -> bool {
                         let mut set = set;
-                        let mut s: &mut Setlike<$e> = &mut set;
+                        let s: &mut Setlike<$e> = &mut set;
                         s.insert(u);
                         !s.insert(u)
                     }
 
                     fn remove_twice(set: $t, u: $e) -> bool {
                         let mut set = set;
-                        let mut s: &mut Setlike<$e> = &mut set;
+                        let s: &mut Setlike<$e> = &mut set;
                         s.insert(u);
                         s.remove(&u) && !s.remove(&u)
                     }
 
                     fn len_increments(set: $t, u: $e) -> bool {
                         let mut set = set;
-                        let mut s: &mut Setlike<$e> = &mut set;
+                        let s: &mut Setlike<$e> = &mut set;
                         let l = s.len();
                         // either u is already in s, or s has its length increased
                         !s.insert(u) || s.len() == l + 1
@@ -149,9 +152,19 @@ mod test {
         }
     }
 
-    set_test!(hash_set, HashSet<usize>, usize,
-              use std::collections::HashSet;);
-    // set_test!(bit_set, BitSet, usize);
-    set_test!(btree_set, BTreeSet<usize>, usize,
-              use std::collections::BTreeSet;);
+    set_test!(
+        hash_set,
+        HashSet<usize>,
+        usize,
+        use std::collections::HashSet;
+    );
+
+    set_test!(
+        btree_set,
+        BTreeSet<usize>,
+        usize,
+        use std::collections::BTreeSet;
+    );
+
+    // bit-set doesn't impl Arbitrary
 }

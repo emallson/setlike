@@ -1,8 +1,13 @@
 [package]
 authors = ["J David Smith <emallson@archlinux.us>"]
 name = "setlike"
-version = "0.1.0"
+version = "0.1.1"
 license = "BSD-3-Clause"
-[dependencies]
-bit-set = "0.4"
-quickcheck = "0.4"
+edition = "2018"
+
+[dependencies.bit-set]
+version = "0.5"
+optional=true
+
+[dev-dependencies]
+quickcheck = "0.8"
